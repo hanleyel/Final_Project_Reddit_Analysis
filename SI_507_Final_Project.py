@@ -444,7 +444,8 @@ def populate_database(db_name):
     'Author' TEXT,
     'Body' TEXT,
     'Time' TEXT,
-    'DayHour' TEXT
+    'DayHour' TEXT,
+    'TimeId' TEXT
     )
     '''
 
@@ -548,10 +549,10 @@ def populate_database(db_name):
 
         time = ele['time']
 
-        fox_article_params = [None, ele['title'], ele['category'], ele['author'], ele['body'], time, time[0:13]]
+        fox_article_params = [None, ele['title'], ele['category'], ele['author'], ele['body'], time, time[0:13], None]
 
         insert_statement = 'INSERT INTO "FoxArticles"'
-        insert_statement += 'Values (?, ?, ?, ?, ?, ?, ?)'
+        insert_statement += 'Values (?, ?, ?, ?, ?, ?, ?, ?)'
 
         cur.execute(insert_statement, fox_article_params)
 
@@ -610,30 +611,22 @@ def populate_database(db_name):
 
     ##### UPDATE FOX ARTICLES AND REDDIT COMMENT TABLES WITH TIME ID #####
 
-    select_statement = '''
-    SELECT FoxRedditDetails.DayHour
-    FROM FoxRedditDetails
-    '''
-
-    cur.execute(select_statement)
-    day_hour_lst = cur.fetchall()
-    print(day_hour_lst)
-
-    update_statement = '''
-    UPDATE FoxArticles
-    SET FoxArticles.TimeId = (
-    SELECT Id
-    FROM FoxRedditDetails
-    WHERE FoxArticles.TimeId = FoxRedditDetails.DayHour
-    )
-    '''
-
     update_statement = '''
     UPDATE RedditComments
     SET TimeId = (
     SELECT Id
     FROM FoxRedditDetails as F
     WHERE F.DayHour = RedditComments.DayHour)
+    '''
+
+    cur.execute(update_statement)
+
+    update_statement = '''
+    UPDATE FoxArticles
+    SET TimeId = (
+    SELECT Id
+    FROM FoxRedditDetails as F
+    WHERE F.DayHour = FoxArticles.DayHour)
     '''
 
     cur.execute(update_statement)
