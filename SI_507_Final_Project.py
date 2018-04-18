@@ -25,6 +25,12 @@ fox_url = 'http://www.foxnews.com/politics.html'
 db_name = 'text.db'
 comment_limit = 10
 
+#####################################
+#####     FOX ARTICLE CLASS     #####
+#####################################
+
+
+
 
 #############################
 ##### IMPLEMENT CACHING #####
@@ -132,7 +138,7 @@ def get_reddit_info(limit, subreddit):
             submission_dict['gild'] = str(submission.gilded)
             submission_dict['id'] = str(submission.id)
             submission_dict['likes'] = str(submission.likes)
-            reddit_dict['media'] = str(submission.media)
+            submission_dict['media'] = str(submission.media)
             submission_dict['name'] = str(submission.name)
             submission_dict['permalink'] = str(submission.permalink)
             submission_dict['save'] = str(submission.saved)
@@ -142,6 +148,7 @@ def get_reddit_info(limit, subreddit):
             submission_dict['subreddit'] = str(submission.subreddit)
             submission_dict['title'] = str(submission.title)
             submission_dict['ups'] = str(submission.ups)
+
             reddit_dict['submission'].append(submission_dict)
 
             submission.comments.replace_more(limit=0)
@@ -265,9 +272,7 @@ def scrape_fox_news():
         ##### FIND PUBLISHED TIME #####
         time_tag = soup.findAll('time')
         time_tag = str(time_tag)
-        pub_time = time_tag[28:53]
-
-        time.sleep(5)
+        pub_time = time_tag[28:38] + " " + time_tag[39:47]
 
         soup_dict['title'] = str(title)
         soup_dict['category'] = str(category)
@@ -334,6 +339,11 @@ def populate_database(db_name):
 
     statement = '''
         DROP TABLE IF EXISTS 'FoxArticles';
+    '''
+    cur.execute(statement)
+
+    statement = '''
+        DROP TABLE IF EXISTS 'FoxRedditDetails';
     '''
     cur.execute(statement)
 
@@ -407,8 +417,11 @@ def populate_database(db_name):
     'Stickied' TEXT,
     'Submission' TEXT,
     'Subreddit' TEXT,
-    'Ups' INTEGER
-    )'''
+    'Ups' INTEGER,
+    'DayHour' TEXT,
+    'TimeId' INTEGER
+    )
+    '''
 
     cur.execute(statement)
 
@@ -427,10 +440,20 @@ def populate_database(db_name):
     CREATE TABLE FoxArticles(
     'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
     'Title' TEXT,
-    'CategorY' TEXT,
+    'Category' TEXT,
     'Author' TEXT,
     'Body' TEXT,
-    'Time' TEXT
+    'Time' TEXT,
+    'DayHour' TEXT
+    )
+    '''
+
+    cur.execute(statement)
+
+    statement = '''
+    CREATE TABLE FoxRedditDetails(
+    'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+    'DayHour' TEXT
     )
     '''
 
@@ -503,13 +526,15 @@ def populate_database(db_name):
 
     for ele in list(reddit_comment_data['comment']):
 
-        reddit_comment_params = [None, ele['id'], ele['submission_id'], ele['archived'], ele['author'], ele['body'], ele['controversiality'], ele['created'],
+        time = ele['created']
+
+        reddit_comment_params = [None, ele['id'], ele['submission_id'], ele['archived'], ele['author'], ele['body'], ele['controversiality'], time,
                                  ele['depth'], ele['distinguished'], ele['downs'], ele['edited'], ele['fullname'],
                                  ele['gild'], ele['likes'], ele['name'], ele['permalink'], ele['save'], ele['score'],
-                                 ele['stickied'], ele['submission'], ele['subreddit'], ele['ups']]
+                                 ele['stickied'], ele['submission'], ele['subreddit'], ele['ups'], time[0:13], None]
 
         insert_statement = 'INSERT INTO "RedditComments"'
-        insert_statement += 'Values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        insert_statement += 'Values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
         cur.execute(insert_statement, reddit_comment_params)
 
@@ -521,10 +546,12 @@ def populate_database(db_name):
 
     for ele in list(fox_submission_data['webpage']):
 
-        fox_article_params = [None, ele['title'], ele['category'], ele['author'], ele['body'], ele['time']]
+        time = ele['time']
+
+        fox_article_params = [None, ele['title'], ele['category'], ele['author'], ele['body'], time, time[0:13]]
 
         insert_statement = 'INSERT INTO "FoxArticles"'
-        insert_statement += 'Values (?, ?, ?, ?, ?, ?)'
+        insert_statement += 'Values (?, ?, ?, ?, ?, ?, ?)'
 
         cur.execute(insert_statement, fox_article_params)
 
@@ -540,7 +567,7 @@ def populate_database(db_name):
         # print("Article: ", ele)
         words = ele['body'].split()
         for word in words:
-            if word not in stopwords.words('english'): ##### FILTER OUT FILLER WORDS #####
+            if word not in stopwords.words('english'): ##### FILTERS OUT FILLER WORDS #####
                 if word not in fox_submission_dict:
                     fox_submission_dict[word] = 1
                 else:
@@ -563,5 +590,174 @@ def populate_database(db_name):
 
         cur.execute(insert_statement, fox_submission_params)
 
+    ##### FOX/REDDIT DETAILS DATA (associative table for fox and reddit post time data) #####
+
+    insert_statement = '''
+    INSERT INTO FoxRedditDetails (DayHour)
+    SELECT DISTINCT FoxArticles.DayHour
+    FROM FoxArticles
+    '''
+    cur.execute(insert_statement)
+
+    insert_statement = '''
+    INSERT INTO FoxRedditDetails (DayHour)
+    SELECT DISTINCT RedditComments.DayHour
+    FROM RedditComments
+    WHERE NOT EXISTS (SELECT 1 FROM FoxRedditDetails WHERE FoxRedditDetails.DayHour = RedditComments.DayHour)
+    '''
+
+    cur.execute(insert_statement)
+
+    ##### UPDATE FOX ARTICLES AND REDDIT COMMENT TABLES WITH TIME ID #####
+
+    select_statement = '''
+    SELECT FoxRedditDetails.DayHour
+    FROM FoxRedditDetails
+    '''
+
+    cur.execute(select_statement)
+    day_hour_lst = cur.fetchall()
+    print(day_hour_lst)
+
+    update_statement = '''
+    UPDATE FoxArticles
+    SET FoxArticles.TimeId = (
+    SELECT Id
+    FROM FoxRedditDetails
+    WHERE FoxArticles.TimeId = FoxRedditDetails.DayHour
+    )
+    '''
+
+    update_statement = '''
+    UPDATE RedditComments
+    SET TimeId = (
+    SELECT Id
+    FROM FoxRedditDetails as F
+    WHERE F.DayHour = RedditComments.DayHour)
+    '''
+
+    cur.execute(update_statement)
+
+
+
+
+
+
     conn.commit()
     conn.close()
+
+
+# #################################
+# #####     CHATBOT STUFF     #####
+# #################################
+#
+# def create_dictionaries (test_str, two_dict = {}, one_dict = {}):
+#
+#     test_str = test_str.split()
+#
+#     count1 = 0
+#     count2 = 1
+#     count3 = 2
+#
+#     while count3 < len(test_str):
+#         two_key = (test_str[count1], test_str[count2])
+#         one_key = test_str[count1]
+#         if two_key in two_dict:
+#             two_dict[two_key].append(test_str[count3])
+#         else:
+#             two_dict[two_key] = [test_str[count3]]
+#         if one_key in one_dict:
+#             one_dict[one_key].append(test_str[count2])
+#         else:
+#             one_dict[one_key] = [test_str[count2]]
+#         count1 += 1
+#         count2 += 1
+#         count3 += 1
+#
+#     return (two_dict, one_dict)
+#
+# # print(two_dict)
+# # print(one_dict)
+#
+# # print(two_dict)
+# # print(one_dict)
+#
+# def get_first_word():
+#     first_word = 'word'
+#     while first_word[0].istitle() == False:
+#         first_word = random.choice(list(one_dict.keys()))
+#     return first_word
+#
+# def create_sentence(count, two_dict, one_dict, first_word):
+#     sentence = first_word.capitalize()
+#
+#     second_word = random.choice(one_dict[first_word])
+#     sentence += ' ' + second_word
+#
+#     count1 = 0
+#     count2 = 1
+#
+#     fhand = open('output_file', 'w')
+#
+#     while len(sentence.split()) < count:
+#     # while sentence[-1] != '.':
+#
+#         current_key = (sentence.split()[count1], sentence.split()[count2])
+#         # print(current_key)
+#
+#         if current_key in two_dict:
+#             next_word = random.choice(two_dict[current_key])
+#             sentence += ' ' + next_word
+#             if next_word[-1]=='.':
+#                 count = count
+#             # print('two',next_word)
+#             # print(next_word)
+#         # elif current_key[1] in one_dict:
+#         else:
+#             next_word = random.choice(one_dict[current_key[1]])
+#             sentence += ' ' + next_word
+#             if next_word[-1]=='.':
+#                 count = count
+#             # print(next_word)
+#             # print('key',current_key[0])
+#             # print('one',next_word)
+#         if sentence[-1]=='.':
+#             sentence += '\n'
+#
+#         count1 += 1
+#         count2 += 1
+#
+#     # sentence = sentence.replace('.', '\n')
+#
+#     fhand.write(sentence)
+#     fhand.close
+#
+#     return sentence
+
+if __name__ == "__main__":
+
+    populate_database(db_name)
+
+    # scrape_fox_news()
+    # fox_results = make_fox_request_using_cache(fox_url)
+    # reddit_results = make_reddit_request_using_cache(subreddit)
+
+    create_db(db_name)
+
+
+
+
+    # get_reddit_info(2)
+
+    # response = get_reddit_info(3, subreddit)
+
+    # for ele in response['comment']:
+    #     print("comment", ele)
+    # for ele in response['submission']:
+    #     print("submission", ele)
+
+    # comment_str = get_text_from_file()
+    # two_dict = create_dictionaries(comment_str)[0]
+    # one_dict = create_dictionaries(comment_str)[1]
+    # first_word = get_first_word()
+    # print(create_sentence(500, two_dict, one_dict, first_word))
