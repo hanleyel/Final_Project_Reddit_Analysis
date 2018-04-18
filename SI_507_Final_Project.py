@@ -1,16 +1,11 @@
 # To Do:
-
 # scrape fox comments
-
 # file w/ reddit comment text?
 # file w/ fox comment/article text?
-
 # count frequencies of words in each
-# get post times?
-
 # input frequencies/post times to SQL
-
 # test cases
+
 
 import praw
 import random
@@ -24,17 +19,16 @@ from nltk.corpus import stopwords
 import datetime
 
 
-FILE_NAME = 'harry_text.txt'
+# FILE_NAME = 'harry_text.txt'
 subreddit = 'The_Donald'
 fox_url = 'http://www.foxnews.com/politics.html'
 db_name = 'text.db'
 comment_limit = 10
 
+
 #############################
 ##### IMPLEMENT CACHING #####
 #############################
-
-## 1 need to figure out how baseurl should be represented (e.g., comment id? subreddit name?)
 
 # Ok... I know it's not efficient to essentially repeat this function twice and I'll fix it if I have time
 
@@ -101,17 +95,6 @@ def make_reddit_request_using_cache(baseurl):  ## 1
         return CACHE_DICTION[unique_ident]
 
 
-# pdf_reader = PyPDF2.PdfFileReader(open('complete_harry_potter.pdf', 'rb'))
-
-# #import text from PDF into txt file
-# fhand = open('harry_text.txt', 'w')
-#
-# for page_number in range(pdf_reader.numPages):
-#     page_obj = pdf_reader.getPage(page_number)
-#     fhand.write(page_obj.extractText())
-#
-# fhand.close()
-
 ####################################
 ##### Create a Reddit instance #####
 ####################################
@@ -139,74 +122,29 @@ def get_reddit_info(limit, subreddit):
 
         submission_dict = {}
 
-
-        # comment_attr_lst = ['archived', 'author', 'block', 'body', 'collapse', 'collapsed', 'controversiality',
-        #                     'created', 'delete', 'depth', 'distinguished', 'downs', 'downvote', 'edit', 'edited',
-        #                     'fullname', 'gild', 'gilded', 'id', 'likes', 'mod', 'name', 'parent', 'parse', 'permalink',
-        #                     'refresh', 'replies', 'reply', 'report', 'save', 'saved', 'score', 'stickied', 'submission',
-        #                     'subreddit', 'uncollapse', 'unsave', 'ups', 'upvote']
-
         if not submission.stickied: # skips stickied posts
 
             submission_dict['archived'] = str(submission.archived)
             submission_dict['author'] = str(submission.author)
-            # reddit_dict['block'] = comment.block
-            # submission_dict['body'] = submission.body
-            # reddit_dict['collapse'] = comment.collapse
-            # reddit_dict['collapsed'] = comment.collapsed
-            # submission_dict['controversiality'] = submission.controversiality
-            # submission_dict['created'] = submission.created
-            # reddit_dict['delete'] = comment.delete
-            # submission_dict['depth'] = submission.depth
             submission_dict['distinguished'] = str(submission.distinguished)
-            # submission_dict['downs'] = submission.downs
-            # reddit_dict['downvote'] = comment.downvote
-            # reddit_dict['edit'] = comment.edit
             submission_dict['edited'] = str(submission.edited)
-            # submission_dict['flair'] = submission.flair
             submission_dict['fullname'] = str(submission.fullname)
             submission_dict['gild'] = str(submission.gilded)
             submission_dict['id'] = str(submission.id)
             submission_dict['likes'] = str(submission.likes)
             reddit_dict['media'] = str(submission.media)
-            # reddit_dict['mod'] = comment.mod
             submission_dict['name'] = str(submission.name)
-            # reddit_dict['parent'] = comment.parent
-            # reddit_dict['parse'] = comment.parse
             submission_dict['permalink'] = str(submission.permalink)
-            # reddit_dict['refresh'] = comment.refresh
-            # reddit_dict['replies'] = comment.replies
-            # reddit_dict['reply'] = comment.reply
-            # reddit_dict['report'] = comment.report
             submission_dict['save'] = str(submission.saved)
             submission_dict['selftext'] = str(submission.selftext)
             submission_dict['score'] = str(submission.score)
             submission_dict['stickied'] = str(submission.stickied)
-            # submission_dict['submission'] = submission.submission
             submission_dict['subreddit'] = str(submission.subreddit)
-            # reddit_dict['uncollapse'] = comment.uncollapse
-            # reddit_dict['unsave'] = comment.unsave
             submission_dict['title'] = str(submission.title)
             submission_dict['ups'] = str(submission.ups)
-            # reddit_dict['upvote'] = comment.upvote
-
             reddit_dict['submission'].append(submission_dict)
 
-            # print(submission)
-
-            # for ele in dir(submission):
-            #     if '_' not in ele:
-            #         print(ele)
-
-            #         attr_lst.append(ele)
-                    # print(getattr(submission, 'body'))
-            #print(submission.title)
-            # print('Title: {}, ups: {}, downs: {}, Have we visited: {}'.format(submission.title,
-            #                                                                   submission.ups,
-            #                                                                   submission.downs,
-            #                                                                   submission.visited))
             submission.comments.replace_more(limit=0)
-
 
             for comment in submission.comments.list():
 
@@ -218,64 +156,33 @@ def get_reddit_info(limit, subreddit):
 
                 comment_dict['archived'] = str(comment.archived)
                 comment_dict['author'] = str(comment.author)
-                # reddit_dict['block'] = comment.block
                 comment_dict['body'] = str(comment.body)
-                # reddit_dict['collapse'] = comment.collapse
-                # reddit_dict['collapsed'] = comment.collapsed
                 comment_dict['controversiality'] = str(comment.controversiality)
                 comment_dict['created'] = str(datetime.datetime.fromtimestamp(comment.created).strftime('%Y-%m-%d %H:%M:%S'))
-                # reddit_dict['delete'] = comment.delete
                 comment_dict['depth'] = str(comment.depth)
                 comment_dict['distinguished'] = str(comment.distinguished)
                 comment_dict['downs'] = str(comment.downs)
-                # reddit_dict['downvote'] = comment.downvote
-                # reddit_dict['edit'] = comment.edit
                 comment_dict['edited'] = str(comment.edited)
                 comment_dict['fullname'] = str(comment.fullname)
                 comment_dict['gild'] = str(comment.gilded)
                 comment_dict['id'] = str(comment.id)
                 comment_dict['likes'] = str(comment.likes)
-                # reddit_dict['mod'] = comment.mod
                 comment_dict['name'] = str(comment.name)
-                # reddit_dict['parent'] = comment.parent
-                # reddit_dict['parse'] = comment.parse
                 comment_dict['permalink'] = str(comment.permalink)
-                # reddit_dict['refresh'] = comment.refresh
-                # reddit_dict['replies'] = comment.replies
-                # reddit_dict['reply'] = comment.reply
-                # reddit_dict['report'] = comment.report
                 comment_dict['save'] = str(comment.saved)
                 comment_dict['score'] = str(comment.score)
                 comment_dict['stickied'] = str(comment.stickied)
                 comment_dict['submission'] = str(comment.submission)
                 comment_dict['submission_id'] = str(submission.id)
                 comment_dict['subreddit'] = str(comment.subreddit)
-                # reddit_dict['uncollapse'] = comment.uncollapse
-                # reddit_dict['unsave'] = comment.unsave
                 comment_dict['ups'] = str(comment.ups)
-                # reddit_dict['upvote'] = comment.upvote
 
                 reddit_dict['comment'].append(comment_dict)
 
-
-                # for ele in attr_lst:
-                #     try:
-                #         print(getattr(comment, ele)())
-                #     except:
-                #         pass
-                # print(20*'-')
-                # print('Parent ID', comment.parent())
-                # print('Comment ID', comment.id)
-                # print(comment.body)
-                # comment_str += comment.body
-                # fhand.write(comment.body)
-                # print(comment.body)
-            # print(reddit_dict)
     fhand.close()
 
     return reddit_dict
 
-    # return submission.comments.list()
 
 ###################################
 #####     SCRAPE FOX NEWS     #####
@@ -285,16 +192,13 @@ def scrape_fox_news():
     # Would be interesting to get comments as well
 
     fox_dict = {'webpage': [],
-                fox_url: []}  ##### FOX URL IS FOR CLASS CHECKPOINT PURPOSES TO PROVE I CAN GRAB THE RAW DATA
+                fox_url: []}  ##### This is for class checkpoint purposes; grabbing raw data
     link_lst = []  # category links on front page
     article_lst = []  # individual articles to scrape
 
     response = requests.get('http://www.foxnews.com/')
     data = response.text
     soup = BeautifulSoup(data, 'html.parser')
-    # print(soup)
-
-    # print(soup)
 
     ##### GET NEWS STORIES #####
 
@@ -307,28 +211,19 @@ def scrape_fox_news():
                 link_lst.append(link[2:])
 
     for ele in link_lst:
-        # print(ele)
 
         soup_dict = {}
 
         response = requests.get('http://' + ele)
         data = response.text
         soup = BeautifulSoup(data, 'html.parser')
-        # print(soup)
-        #
-        #     fox_dict[fox_url] = str(soup) ##### THIS IS FOR CLASS CHECKPOINT PURPOSES TO PROVE I CAN GRAB THE RAW DATA
-        #
+
         ##### FIND ARTICLES #####
         article_class = soup.findAll('article', class_=re.compile('story-*'))
-        # print(article_class)
         for item in article_class:
             try:
                 link = item.find('a')['href']
                 if link[1:9] != 'category' and 'video' not in link:
-                    # print(link)
-                    # print(link)
-                    # if link[0] == '/':
-                    #    print(link)
                     article_lst.append('http://foxnews.com' + link)
             except:
                 pass
@@ -386,80 +281,11 @@ def scrape_fox_news():
 
     return fox_dict
 
-    # # Would be interesting to get comments as well
-    #
-    # fox_dict = {'webpage': [], fox_url:[]} ##### FOX URL IS FOR CLASS CHECKPOINT PURPOSES TO PROVE I CAN GRAB THE RAW DATA
-    # link_lst = []
-    #
-    # response = requests.get('http://www.foxnews.com/politics.html')
-    # data = response.text
-    # soup = BeautifulSoup(data, 'html.parser')
-    #
-    # # print(soup)
-    #
-    # ##### GET TRENDING NEWS STORIES     #####
-    #
-    # trending_class = soup.findAll('section', class_='collection collection-trending')
-    # # print(trending_class)
-    #
-    # for ele in trending_class:
-    #     a_tag = ele.select('a')
-    #     # print(a_tag)
-    #     for a in a_tag:
-    #         # print(a)
-    #         link = a['href']
-    #         if link not in link_lst:
-    #             link_lst.append(link)
-    # # print(link_lst)
-    #
-    # for ele in link_lst:
-    #
-    #     soup_dict = {}
-    #
-    #     response = requests.get(ele)
-    #     data = response.text
-    #     soup = BeautifulSoup(data, 'html.parser')
-    #
-    #     fox_dict[fox_url] = str(soup) ##### THIS IS FOR CLASS CHECKPOINT PURPOES TO PROVE I CAN GRAB THE RAW DATA
-    #
-    #     ##### FIND TITLE #####
-    #     title = soup.find('title').text
-    #     # print(title)
-    #
-    #     ##### FIND AUTHOR #####
-    #     author_class = soup.find('div', class_='author-byline')
-    #     # print(author_class)
-    #     author_span = author_class.find('span')
-    #     author = author_span.find('a').text.strip()
-    #
-    #     ##### FIND BODY #####
-    #     body = ''
-    #     body_class = soup.find('div', class_='article-body')
-    #     p_tags = body_class.findAll('p')
-    #     for tag in p_tags:
-    #         body += tag.text
-    #     # print(body)
-    #
-    #     soup_dict['title'] = str(title)
-    #     soup_dict['author'] = str(author)
-    #     soup_dict['body'] = str(body)
-    #
-    #
-    #
-    #     fox_dict['webpage'].append(soup_dict)
-    #
-    #
-    #
-    # return fox_dict
-
-#def get_text_from_file():
-    fhand = open(FILE_NAME, 'r')
-    comment_str = fhand.read()
-    fhand.close()
-    return comment_str
-
-# A variety of options for getting text data:
-# comment_str = get_reddit_info().strip()
+# def get_text_from_file():
+#     fhand = open(FILE_NAME, 'r')
+#     comment_str = fhand.read()
+#     fhand.close()
+#     return comment_str
 
 
 ####################################
@@ -476,9 +302,7 @@ def create_db(db_name):
 
 def populate_database(db_name):
 
-    ############################################
-    #####     DROP PRE-EXISTING TABLES     #####
-    ############################################
+    ##### DROP PRE-EXISTING TABLES #####
 
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
@@ -513,9 +337,7 @@ def populate_database(db_name):
     '''
     cur.execute(statement)
 
-    #################################
-    #####     CREATE TABLES     #####
-    #################################
+    ##### CREATE TABLES #####
 
     statement = '''
     CREATE TABLE RedditSubmissionWords(
@@ -614,9 +436,7 @@ def populate_database(db_name):
 
     cur.execute(statement)
 
-    #############################################
-    #####     POPULATE TABLES WITH DATA     #####
-    #############################################
+    ##### POPULATE TABLES WITH DATA #####
 
     ##### REDDIT SUBMISSION WORDS DATA #####
 
@@ -745,121 +565,3 @@ def populate_database(db_name):
 
     conn.commit()
     conn.close()
-
-
-
-
-#################################
-#####     CHATBOT STUFF     #####
-#################################
-
-def create_dictionaries (test_str, two_dict = {}, one_dict = {}):
-
-    test_str = test_str.split()
-
-    count1 = 0
-    count2 = 1
-    count3 = 2
-
-    while count3 < len(test_str):
-        two_key = (test_str[count1], test_str[count2])
-        one_key = test_str[count1]
-        if two_key in two_dict:
-            two_dict[two_key].append(test_str[count3])
-        else:
-            two_dict[two_key] = [test_str[count3]]
-        if one_key in one_dict:
-            one_dict[one_key].append(test_str[count2])
-        else:
-            one_dict[one_key] = [test_str[count2]]
-        count1 += 1
-        count2 += 1
-        count3 += 1
-
-    return (two_dict, one_dict)
-
-# print(two_dict)
-# print(one_dict)
-
-# print(two_dict)
-# print(one_dict)
-
-def get_first_word():
-    first_word = 'word'
-    while first_word[0].istitle() == False:
-        first_word = random.choice(list(one_dict.keys()))
-    return first_word
-
-def create_sentence(count, two_dict, one_dict, first_word):
-    sentence = first_word.capitalize()
-
-    second_word = random.choice(one_dict[first_word])
-    sentence += ' ' + second_word
-
-    count1 = 0
-    count2 = 1
-
-    fhand = open('output_file', 'w')
-
-    while len(sentence.split()) < count:
-    # while sentence[-1] != '.':
-
-        current_key = (sentence.split()[count1], sentence.split()[count2])
-        # print(current_key)
-
-        if current_key in two_dict:
-            next_word = random.choice(two_dict[current_key])
-            sentence += ' ' + next_word
-            if next_word[-1]=='.':
-                count = count
-            # print('two',next_word)
-            # print(next_word)
-        # elif current_key[1] in one_dict:
-        else:
-            next_word = random.choice(one_dict[current_key[1]])
-            sentence += ' ' + next_word
-            if next_word[-1]=='.':
-                count = count
-            # print(next_word)
-            # print('key',current_key[0])
-            # print('one',next_word)
-        if sentence[-1]=='.':
-            sentence += '\n'
-
-        count1 += 1
-        count2 += 1
-
-    # sentence = sentence.replace('.', '\n')
-
-    fhand.write(sentence)
-    fhand.close
-
-    return sentence
-
-if __name__ == "__main__":
-
-    populate_database(db_name)
-
-    # scrape_fox_news()
-    # fox_results = make_fox_request_using_cache(fox_url)
-    # reddit_results = make_reddit_request_using_cache(subreddit)
-
-    create_db(db_name)
-
-
-
-
-    # get_reddit_info(2)
-
-    # response = get_reddit_info(3, subreddit)
-
-    # for ele in response['comment']:
-    #     print("comment", ele)
-    # for ele in response['submission']:
-    #     print("submission", ele)
-
-    # comment_str = get_text_from_file()
-    # two_dict = create_dictionaries(comment_str)[0]
-    # one_dict = create_dictionaries(comment_str)[1]
-    # first_word = get_first_word()
-    # print(create_sentence(500, two_dict, one_dict, first_word))
