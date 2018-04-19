@@ -1,0 +1,5 @@
+reddit_username = ''
+reddit_password = ''
+reddit_user_agent = ''
+reddit_client_id = ''
+reddit_client_secret = ''
