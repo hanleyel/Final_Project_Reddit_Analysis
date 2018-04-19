@@ -765,7 +765,8 @@ def plot_fox_post_times():
 
     data = [go.Bar(
        x = x_data,
-       y = y_data
+       y = y_data,
+       name = "Fox News Post Times"
     )]
 
     py.plot(data, filename='basic-bar')
@@ -791,7 +792,8 @@ def plot_reddit_post_times():
 
     data = [go.Bar(
        x = x_data,
-       y = y_data
+       y = y_data,
+       name="Reddit Comment Post Times"
     )]
 
     py.plot(data, filename='basic-bar')
@@ -817,7 +819,8 @@ def plot_fox_authors():
 
     data = [go.Bar(
        x = x_data,
-       y = y_data
+       y = y_data,
+       name="Fox News Authors"
     )]
 
     py.plot(data, filename='basic-bar')
@@ -834,16 +837,23 @@ def plot_reddit_authors():
         else:
             author_dict[author] += 1
 
-    x_data = list(author_dict.keys())
+    filtered_author_dict = {}
+
+    for ele in list(author_dict.keys()):
+        if author_dict[ele] > 10:
+            filtered_author_dict[ele] = author_dict[ele]
+
+    x_data = list(filtered_author_dict.keys())
     y_data = []
     for ele in x_data:
-        y_data.append(author_dict[ele])
+        y_data.append(filtered_author_dict[ele])
 
     print("Plotting reddit authors...")
 
     data = [go.Bar(
        x = x_data,
-       y = y_data
+       y = y_data,
+       name="Reddit Comment Authors"
     )]
 
     py.plot(data, filename='basic-bar')
@@ -859,7 +869,7 @@ def get_input_from_user():
 
     while user_input != 'exit':
         user_input = input("\nPlease select the number corresponding to the plot you would like to see, or type 'exit' to quit:\n\n1 Fox News Authors\n"
-                           "2 Reddit Comment Authors\n3 Fox News Post Times\n4 Reddit Comment Post Times\n\nType your selection here: ")
+                           "2 Reddit Comment Authors (with at least 10 posts)\n3 Fox News Post Times\n4 Reddit Comment Post Times\n\nType your selection here: ")
         try:
             if user_input == '1':
                 plot_fox_authors()
