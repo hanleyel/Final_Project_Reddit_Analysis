@@ -20,6 +20,7 @@ from nltk.corpus import stopwords
 import datetime
 import plotly.plotly as py
 import plotly.graph_objs as go
+from secrets import *
 
 ####################################
 #####     GLOBAL VARIABLES     #####
@@ -132,11 +133,11 @@ def get_reddit_info(limit, subreddit):
 
     reddit_dict = {'comment': [], 'submission': []}
 
-    reddit = praw.Reddit(client_id='pjgL2F9jwdUDGg',
-                         client_secret='88YOfEa8lWM6dv5PsgUg_Al32To',
-                         username='HexMouse',
-                         password='LePetitPrince',
-                         user_agent='HexChat')
+    reddit = praw.Reddit(client_id=reddit_client_id,
+                         client_secret=reddit_client_secret,
+                         username=reddit_username,
+                         password=reddit_password,
+                         user_agent=reddit_user_agent)
 
     subreddit = reddit.subreddit(subreddit)
 
