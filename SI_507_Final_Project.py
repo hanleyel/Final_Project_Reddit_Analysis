@@ -18,7 +18,7 @@ import random
 import re
 from nltk.corpus import stopwords
 import datetime
-import plotly as py
+import plotly.plotly as py
 import plotly.graph_objs as go
 
 ####################################
@@ -740,6 +740,12 @@ def create_reddit_comment_instance_lst():
 
 def plot_fox_post_times():
     print("this will plot fox post times")
+    data = [go.Bar(
+       x = ["test1", "test2", "test3"],
+       y = [1, 2, 3]
+    )]
+
+    py.plot(data, filename='basic-bar')
 
 def plot_reddit_post_times():
     print("this will plot reddit post times")
@@ -764,19 +770,22 @@ def get_input_from_user():
                            "2 Reddit Comment Authors\n3 Fox News Post Times\n4 Reddit Comment Post Times\n\nType your selection here: ")
         try:
             if user_input == '1':
-                plot_fox_post_times()
-                continue
-            elif user_input == '2':
-                plot_reddit_post_times()
-                continue
-            elif user_input == '3':
                 plot_fox_authors()
                 continue
-            elif user_input == '4':
+            elif user_input == '2':
                 plot_reddit_authors()
                 continue
+            elif user_input == '3':
+                plot_fox_post_times()
+                continue
+            elif user_input == '4':
+                plot_reddit_post_times()
+                continue
             else:
-                print("Please enter a valid selection!")
+                if user_input != 'exit':
+                    print("Please enter a valid selection!")
+                else:
+                    print("Bye!")
                 continue
             return(user_input)
         except:
