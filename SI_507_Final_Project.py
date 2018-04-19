@@ -761,7 +761,8 @@ def plot_fox_post_times():
     # print(y_data)
 
 
-    print("this will plot fox post times")
+    print("Plotting fox post times...")
+
     data = [go.Bar(
        x = x_data,
        y = y_data
@@ -770,13 +771,82 @@ def plot_fox_post_times():
     py.plot(data, filename='basic-bar')
 
 def plot_reddit_post_times():
-    print("this will plot reddit post times")
+
+    reddit_instances = create_reddit_comment_instance_lst()
+    plot_time_dict = {}
+
+    for ele in reddit_instances:
+        hour = ele.post_time[-2:]
+        if hour not in plot_time_dict:
+            plot_time_dict[hour] = 1
+        else:
+            plot_time_dict[hour] += 1
+
+    x_data = list(plot_time_dict.keys())
+    y_data = []
+    for ele in x_data:
+        y_data.append(int(plot_time_dict[ele]))
+
+    print("Plotting reddit post times...")
+
+    data = [go.Bar(
+       x = x_data,
+       y = y_data
+    )]
+
+    py.plot(data, filename='basic-bar')
 
 def plot_fox_authors():
-    print("this will plot fox authors")
+
+    fox_instances = create_fox_instance_lst()
+    author_dict = {}
+
+    for ele in fox_instances:
+        author = ele.author
+        if author not in author_dict:
+            author_dict[author] = 1
+        else:
+            author_dict[author] += 1
+
+    x_data = list(author_dict.keys())
+    y_data = []
+    for ele in x_data:
+        y_data.append(author_dict[ele])
+
+    print("Plotting fox authors...")
+
+    data = [go.Bar(
+       x = x_data,
+       y = y_data
+    )]
+
+    py.plot(data, filename='basic-bar')
 
 def plot_reddit_authors():
-    print("this will plot reddit authors")
+
+    reddit_instances = create_reddit_comment_instance_lst()
+    author_dict = {}
+
+    for ele in reddit_instances:
+        author = ele.author
+        if author not in author_dict:
+            author_dict[author] = 1
+        else:
+            author_dict[author] += 1
+
+    x_data = list(author_dict.keys())
+    y_data = []
+    for ele in x_data:
+        y_data.append(author_dict[ele])
+
+    print("Plotting reddit authors...")
+
+    data = [go.Bar(
+       x = x_data,
+       y = y_data
+    )]
+
+    py.plot(data, filename='basic-bar')
 
 
 ######################################
