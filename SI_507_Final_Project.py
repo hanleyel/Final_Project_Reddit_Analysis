@@ -739,10 +739,32 @@ def create_reddit_comment_instance_lst():
 ########################################
 
 def plot_fox_post_times():
+
+    fox_instances = create_fox_instance_lst()
+    plot_time_dict = {}
+
+    for ele in fox_instances:
+        hour = ele.post_time[-2:]
+        if hour not in plot_time_dict:
+            plot_time_dict[hour] = 1
+        else:
+            plot_time_dict[hour] += 1
+
+    # print(plot_time_dict)
+
+    x_data = list(plot_time_dict.keys())
+    y_data = []
+    for ele in x_data:
+        y_data.append(int(plot_time_dict[ele]))
+
+    # print(x_data)
+    # print(y_data)
+
+
     print("this will plot fox post times")
     data = [go.Bar(
-       x = ["test1", "test2", "test3"],
-       y = [1, 2, 3]
+       x = x_data,
+       y = y_data
     )]
 
     py.plot(data, filename='basic-bar')
@@ -882,6 +904,6 @@ if __name__ == "__main__":
 
     # populate_database(db_name)
     # create_db(db_name)
-    # create_fox_instance_lst()
-    # create_reddit_comment_instance_lst()
+    create_fox_instance_lst()
+    create_reddit_comment_instance_lst()
     get_input_from_user()
