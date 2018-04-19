@@ -14,16 +14,24 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 import time
+import random
 import re
 from nltk.corpus import stopwords
 import datetime
+import plotly as py
+import plotly.graph_objs as go
 
+####################################
+#####     GLOBAL VARIABLES     #####
+####################################
 
 # FILE_NAME = 'harry_text.txt'
-subreddit = 'The_Donald'
-fox_url = 'http://www.foxnews.com/politics.html'
+subreddit = 'The_Donald' # Which subreddit to get submissions from
+fox_url = 'http://www.foxnews.com/politics.html' # I think this is vestigial but it's so close to the project deadline
+                                                 # that I'm not about to touch it right now
 db_name = 'text.db'
-comment_limit = 10
+comment_limit = 50 # How many Reddit submissions (not comments, actually) to retrieve
+
 
 #####################################
 #####     FOX ARTICLE CLASS     #####
@@ -256,7 +264,7 @@ def scrape_fox_news():
 
     soup_dict_lst = []
 
-    for article in article_lst[0:5]:
+    for article in article_lst:
 
         soup_dict = {}
 
@@ -264,29 +272,42 @@ def scrape_fox_news():
         data = response.text
         soup = BeautifulSoup(data, 'html.parser')
 
-        title = soup.find('h1', class_='headline').text
-        # print(title)
+        try:
+            title = soup.find('h1', class_='headline').text
+        except:
+            title = ' '
+
+        print(title)
 
         ##### FIND CATEGORY #####
-        category_class = soup.find('div', class_='eyebrow')
-        category = category_class.find('a').text
+        try:
+            category_class = soup.find('div', class_='eyebrow')
+            category = category_class.find('a').text
+        except:
+            category = ' '
         # print(category)
 
         ##### FIND AUTHOR #####
-        author_class = soup.find('div', class_='author-byline')
-        # print(author_class)
-        # print(author_class)
-        author_span = author_class.find('span')
-        author = author_span.find('a').text.strip()
+        try:
+            author_class = soup.find('div', class_='author-byline')
+            # print(author_class)
+            # print(author_class)
+            author_span = author_class.find('span')
+            author = author_span.find('a').text.strip()
+        except:
+            author = ' '
         # print(author)
 
         ##### FIND BODY #####
-        body = ''
-        body_class = soup.find('div', class_='article-body')
-        p_tags = body_class.findAll('p')
-        for tag in p_tags:
-            body += tag.text
-        body = body.strip()
+        try:
+            body = ''
+            body_class = soup.find('div', class_='article-body')
+            p_tags = body_class.findAll('p')
+            for tag in p_tags:
+                body += tag.text
+            body = body.strip()
+        except:
+            body = ' '
         # print(body)
 
         ##### FIND PUBLISHED TIME #####
@@ -304,7 +325,8 @@ def scrape_fox_news():
 
         soup_dict_lst.append(soup_dict)
 
-        time.sleep(5)
+        time_delay = random.randrange(0, 10) # delays crawling "hits" to prevent getting blocked (I hope?)
+        time.sleep(time_delay)
 
     fox_dict['webpage'] = soup_dict_lst
 
@@ -660,9 +682,9 @@ def populate_database(db_name):
     conn.close()
 
 
-##########################################
-#####     CREATE CLASS INSTANCES     #####
-##########################################
+###############################################
+#####     CREATE CLASS INSTANCE LISTS     #####
+###############################################
 
 ##### FOX ARTICLE INSTANCES #####
 
@@ -711,6 +733,48 @@ def create_reddit_comment_instance_lst():
 
     return reddit_comment_instance_lst
 
+
+########################################
+#####     CREATE PLOTLY GRAPHS     #####
+########################################
+
+def plot_fox_post_times():
+    print("this will plot fox post times")
+
+def plot_reddit_post_times():
+    print("this will plot reddit post times")
+
+def plot_fox_authors():
+    print("this will plot fox authors")
+
+def plot_reddit_authors():
+    print("this will plot reddit authors")
+
+
+######################################
+#####     USER INTERACTIVITY     #####
+######################################
+
+def get_input_from_user():
+
+    user_input = ''
+
+    while user_input != 'exit':
+        user_input = input("Please select the number corresponding to the plot you would like to see, or type 'exit' to quit:\n1 Fox News Authors\n"
+                           "2 Reddit Comment Authors\n3 Fox News Post Times\n4 Reddit Comment Post Times\n\nType your selection here: ")
+        try:
+            if user_input == '1':
+                plot_fox_post_times()
+            elif user_input == '2':
+                plot_reddit_post_times()
+            elif user_input == '3':
+                plot_fox_authors()
+            elif user_input == '4':
+                plot_reddit_authors()
+            return(user_input)
+        except:
+            print("Please enter a valid selection: ")
+            continue
 
 # #################################
 # #####     CHATBOT STUFF     #####
@@ -808,14 +872,18 @@ if __name__ == "__main__":
     # reddit_results = make_reddit_request_using_cache(subreddit)
 
     create_db(db_name)
+    create_fox_instance_lst()
+    create_reddit_comment_instance_lst()
 
-    fox_instances = create_fox_instance_lst()
-    for ele in fox_instances[0:5]:
-        print(ele.post_time, ele.author)
+    print(get_input_from_user())
 
-    reddit_instances = create_reddit_comment_instance_lst()
-    for ele in reddit_instances[0:5]:
-        print(ele.post_time, ele.author)
+    # fox_instances = create_fox_instance_lst()
+    # for ele in fox_instances[0:5]:
+    #     print(ele.post_time, ele.author)
+    #
+    # reddit_instances = create_reddit_comment_instance_lst()
+    # for ele in reddit_instances[0:5]:
+    #     print(ele.post_time, ele.author)
 
 
 
