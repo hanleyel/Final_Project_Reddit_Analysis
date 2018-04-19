@@ -29,7 +29,18 @@ comment_limit = 10
 #####     FOX ARTICLE CLASS     #####
 #####################################
 
-class Media():
+class FoxArticle():
+
+    def __init__(self, post_time, author):
+        self.post_time = post_time
+        self.author = author
+
+
+########################################
+#####     REDDIT ARTICLE CLASS     #####
+########################################
+
+class RedditComment():
 
     def __init__(self, post_time, author):
         self.post_time = post_time
@@ -238,7 +249,7 @@ def scrape_fox_news():
                     article_lst.append('http://foxnews.com' + link)
             except:
                 pass
-    print(article_lst)
+    # print(article_lst)
     print('Article list length: ', len(article_lst))
 
     ##### FIND TITLE #####
@@ -254,12 +265,12 @@ def scrape_fox_news():
         soup = BeautifulSoup(data, 'html.parser')
 
         title = soup.find('h1', class_='headline').text
-        print(title)
+        # print(title)
 
         ##### FIND CATEGORY #####
         category_class = soup.find('div', class_='eyebrow')
         category = category_class.find('a').text
-        print(category)
+        # print(category)
 
         ##### FIND AUTHOR #####
         author_class = soup.find('div', class_='author-byline')
@@ -289,7 +300,7 @@ def scrape_fox_news():
         soup_dict['body'] = str(body)
         soup_dict['time'] = str(pub_time)
 
-        print(soup_dict)
+        # print(soup_dict)
 
         soup_dict_lst.append(soup_dict)
 
@@ -297,7 +308,7 @@ def scrape_fox_news():
 
     fox_dict['webpage'] = soup_dict_lst
 
-    print('FOX DICT: ', fox_dict)
+    # print('FOX DICT: ', fox_dict)
     return fox_dict
 
 # def get_text_from_file():
@@ -557,7 +568,7 @@ def populate_database(db_name):
 
     fox_submission_data = make_fox_request_using_cache(fox_url)
 
-    print(fox_submission_data)
+    # print(fox_submission_data)
 
     for ele in list(fox_submission_data['webpage']):
 
@@ -573,7 +584,7 @@ def populate_database(db_name):
 
     ##### FOX ARTICLE WORDS DATA #####
 
-    print(fox_submission_data['webpage'][0].keys())
+    # print(fox_submission_data['webpage'][0].keys())
 
     fox_submission_dict = {}
     fox_submission_freq_dict = {}
@@ -592,9 +603,9 @@ def populate_database(db_name):
     for word in list(fox_submission_dict.keys()):
         fox_submission_freq_dict[word] = fox_submission_dict[word]/fox_submission_vocab
 
-    print(fox_submission_dict)
-    print(fox_submission_freq_dict)
-    print(fox_submission_vocab)
+    # print(fox_submission_dict)
+    # print(fox_submission_freq_dict)
+    # print(fox_submission_vocab)
 
     for ele in list(fox_submission_dict.keys()):
 
@@ -645,13 +656,60 @@ def populate_database(db_name):
 
     cur.execute(update_statement)
 
-
-
-
-
-
     conn.commit()
     conn.close()
+
+
+##########################################
+#####     CREATE CLASS INSTANCES     #####
+##########################################
+
+##### FOX ARTICLE INSTANCES #####
+
+def create_fox_instance_lst():
+
+    conn = sqlite3.connect(db_name)
+    cur = conn.cursor()
+
+    fox_class_instance_lst = []
+
+    select_statement = '''
+    SELECT DayHour, Author
+    FROM FoxArticles
+    '''
+
+    cur.execute(select_statement)
+    test_lst = cur.fetchall()
+    # print("Test list: ", test_lst)
+
+    for ele in test_lst:
+        fox_class = FoxArticle(ele[0], ele[1].replace('|', '').strip())
+        fox_class_instance_lst.append(fox_class)
+
+    return fox_class_instance_lst
+
+##### REDDIT COMMENT INSTANCES #####
+
+def create_reddit_comment_instance_lst():
+
+    conn = sqlite3.connect(db_name)
+    cur = conn.cursor()
+
+    reddit_comment_instance_lst = []
+
+    select_statement = '''
+    SELECT DayHour, Author
+    FROM RedditComments
+    '''
+
+    cur.execute(select_statement)
+    test_lst = cur.fetchall()
+
+    for ele in test_lst:
+        reddit_class = RedditComment(ele[0], ele[1])
+        reddit_comment_instance_lst.append(reddit_class)
+
+    return reddit_comment_instance_lst
 
 
 # #################################
@@ -750,6 +808,14 @@ if __name__ == "__main__":
     # reddit_results = make_reddit_request_using_cache(subreddit)
 
     create_db(db_name)
+
+    fox_instances = create_fox_instance_lst()
+    for ele in fox_instances[0:5]:
+        print(ele.post_time, ele.author)
+
+    reddit_instances = create_reddit_comment_instance_lst()
+    for ele in reddit_instances[0:5]:
+        print(ele.post_time, ele.author)
 
 
 
