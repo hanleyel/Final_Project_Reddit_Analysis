@@ -29,7 +29,11 @@ comment_limit = 10
 #####     FOX ARTICLE CLASS     #####
 #####################################
 
+class Media():
 
+    def __init__(self, post_time, author):
+        self.post_time = post_time
+        self.author = author
 
 
 #############################
@@ -219,7 +223,7 @@ def scrape_fox_news():
 
     for ele in link_lst:
 
-        soup_dict = {}
+        # soup_dict = {}
 
         response = requests.get('http://' + ele)
         data = response.text
@@ -239,7 +243,12 @@ def scrape_fox_news():
 
     ##### FIND TITLE #####
 
+    soup_dict_lst = []
+
     for article in article_lst[0:5]:
+
+        soup_dict = {}
+
         response = requests.get(article)
         data = response.text
         soup = BeautifulSoup(data, 'html.parser')
@@ -280,10 +289,15 @@ def scrape_fox_news():
         soup_dict['body'] = str(body)
         soup_dict['time'] = str(pub_time)
 
-        fox_dict['webpage'].append(soup_dict)
+        print(soup_dict)
+
+        soup_dict_lst.append(soup_dict)
 
         time.sleep(5)
 
+    fox_dict['webpage'] = soup_dict_lst
+
+    print('FOX DICT: ', fox_dict)
     return fox_dict
 
 # def get_text_from_file():
