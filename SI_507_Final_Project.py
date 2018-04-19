@@ -760,20 +760,26 @@ def get_input_from_user():
     user_input = ''
 
     while user_input != 'exit':
-        user_input = input("Please select the number corresponding to the plot you would like to see, or type 'exit' to quit:\n1 Fox News Authors\n"
+        user_input = input("\nPlease select the number corresponding to the plot you would like to see, or type 'exit' to quit:\n\n1 Fox News Authors\n"
                            "2 Reddit Comment Authors\n3 Fox News Post Times\n4 Reddit Comment Post Times\n\nType your selection here: ")
         try:
             if user_input == '1':
                 plot_fox_post_times()
+                continue
             elif user_input == '2':
                 plot_reddit_post_times()
+                continue
             elif user_input == '3':
                 plot_fox_authors()
+                continue
             elif user_input == '4':
                 plot_reddit_authors()
+                continue
+            else:
+                print("Please enter a valid selection!")
+                continue
             return(user_input)
         except:
-            print("Please enter a valid selection: ")
             continue
 
 # #################################
@@ -865,40 +871,8 @@ def get_input_from_user():
 
 if __name__ == "__main__":
 
-    populate_database(db_name)
-
-    # scrape_fox_news()
-    # fox_results = make_fox_request_using_cache(fox_url)
-    # reddit_results = make_reddit_request_using_cache(subreddit)
-
-    create_db(db_name)
-    create_fox_instance_lst()
-    create_reddit_comment_instance_lst()
-
-    print(get_input_from_user())
-
-    # fox_instances = create_fox_instance_lst()
-    # for ele in fox_instances[0:5]:
-    #     print(ele.post_time, ele.author)
-    #
-    # reddit_instances = create_reddit_comment_instance_lst()
-    # for ele in reddit_instances[0:5]:
-    #     print(ele.post_time, ele.author)
-
-
-
-
-    # get_reddit_info(2)
-
-    # response = get_reddit_info(3, subreddit)
-
-    # for ele in response['comment']:
-    #     print("comment", ele)
-    # for ele in response['submission']:
-    #     print("submission", ele)
-
-    # comment_str = get_text_from_file()
-    # two_dict = create_dictionaries(comment_str)[0]
-    # one_dict = create_dictionaries(comment_str)[1]
-    # first_word = get_first_word()
-    # print(create_sentence(500, two_dict, one_dict, first_word))
+    # populate_database(db_name)
+    # create_db(db_name)
+    # create_fox_instance_lst()
+    # create_reddit_comment_instance_lst()
+    get_input_from_user()
